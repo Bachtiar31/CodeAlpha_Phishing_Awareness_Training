@@ -1,82 +1,53 @@
-CodeAlpha: Basic Network Sniffer (Task 1)
+CodeAlpha: Phishing Awareness Training (Task 2)
 
-Sebuah program penganalisis paket jaringan (network packet sniffer) berbasis Python yang tangguh dan interaktif. Aplikasi ini dikembangkan untuk menangkap, mengurai (parsing), dan menganalisis lalu lintas data jaringan lokal secara real-time guna mempelajari arsitektur protokol jaringan.
+Sebuah platform web berbasis interaktif bergaya cyberpunk deck modern yang berfungsi sebagai generator sekaligus perekam video presentasi edukasi anti-phishing. Aplikasi ini dirancang agar dapat berjalan lancar di perangkat mobile (HP) guna membantu pengguna mempelajari ancaman rekayasa sosial (social engineering) dan teknik verifikasi URL palsu secara praktis.
 
-Proyek ini dibuat untuk memenuhi persyaratan Task 1 pada Program Magang Cyber Security di CodeAlpha.
+Proyek ini dibuat untuk memenuhi persyaratan Task 2 pada Program Magang Cyber Security di CodeAlpha.
 
 📋 Prasyarat & Kebutuhan Sistem
 
-Aplikasi ini membutuhkan akses soket mentah (raw socket access), sehingga harus dijalankan dengan hak akses administrator/root.
+Platform ini merupakan aplikasi web satu-file (Single-Page Application) yang bekerja sepenuhnya di sisi klien (client-side).
 
 1. Kebutuhan Perangkat Keras & Lunak
 
-Sistem Operasi: Linux (Sangat direkomendasikan), macOS, Windows, atau Android (menggunakan Termux).
+Sistem Operasi: Android, iOS, Windows, macOS, atau Linux.
 
-Python: Versi 3.8 atau yang lebih baru.
+Browser: Chrome, Edge, Safari, atau Firefox versi terbaru yang mendukung Web Speech API dan MediaRecorder API.
 
-Hak Akses: Root / Sudo (pada Linux/macOS) atau Administrator (pada Windows).
+Akses Mikrofon (Opsional): Diperlukan jika Anda ingin menyatukan suara eksternal Anda sendiri ke dalam video perekaman.
 
-2. Dependensi Python (Libraries)
+2. Integrasi Layanan (Libraries)
 
-Aplikasi ini memanfaatkan pustaka-pustaka berikut:
+Aplikasi ini memuat dependensi secara dinamis lewat jaringan internet (CDN):
 
-Scapy: Mesin utama untuk melakukan manipulasi dan penangkapan paket data.
+Tailwind CSS: Untuk penataan tata letak responsif yang memukau di layar HP.
 
-Colorama: Untuk memberikan pewarnaan visual (syntax highlighting) pada terminal konsol agar mudah dibaca.
+FontAwesome: Menyediakan ikon-ikon siber berkualitas tinggi.
 
-🛠️ Langkah-Langkah Instalasi
+Gemini AI API: Mengintegrasikan model kecerdasan buatan Gemini untuk pembuatan kuis dan slide kustom secara dinamis.
 
-Jalur A: Di PC (Linux / Ubuntu / Debian)
+🎬 Panduan Perekaman Video Presentasi lewat HP
 
-Instalasi Dependensi Sistem:
+Sesuai instruksi magang CodeAlpha untuk membuat video presentasi mandiri, berikut adalah langkah kerjanya langsung dari HP Anda:
 
-sudo apt update
-sudo apt install python3 python3-pip -y
+Persiapan: Buka berkas cyber_security_video_generator.html menggunakan browser seluler di HP Anda (misal: Google Chrome).
 
+Aktifkan Suara Narator: Klik tombol kuning berkedip di pojok kanan atas bertuliskan "AKTIFKAN SUARA NARATOR (CLIK DISINI)". Langkah ini akan membuka kunci pemblokiran audio sistem seluler Anda agar narator siber dapat berbicara dalam bahasa Inggris.
 
-Instalasi Pustaka Python:
+Mulai Merekam: Klik tombol merah "Rekam File (.WebM)".
 
-pip3 install scapy colorama
+Alur Otomatis: Studio akan memutar dek presentasi Phishing Awareness secara interaktif slide demi slide sambil membacakan naskah penjelasannya secara otomatis.
 
+Simpan Rekaman: Setelah selesai, klik kembali tombol rekam (yang sekarang berubah warna menjadi kuning "Stop & Unduh").
 
-Jalur B: Di Handphone (Android via Termux)
-
-Instalasi Paket Dasar di Termux:
-
-pkg update && pkg upgrade -y
-pkg install python python-pip git -y
-
-
-Instalasi Scapy & Dependensi:
-
-pip install scapy colorama
-
-
-Catatan: Menjalankan sniffer pada Termux memerlukan perangkat Android yang sudah di-root untuk dapat mengakses kartu jaringan fisik (Wi-Fi/seluler).
-
-🚀 Cara Menjalankan Program
-
-Buka terminal atau CLI di folder tempat file basic_network_sniffer.py disimpan.
-
-Jalankan program dengan perintah hak akses root:
-
-sudo python3 basic_network_sniffer.py
-
-
-Program akan mulai mendengarkan (listening) pada adapter jaringan aktif Anda.
-
-Tekan tombol Ctrl + C di keyboard untuk menghentikan proses penangkapan. Setelah dihentikan, program akan secara otomatis mengekspor seluruh log paket yang tertangkap ke dalam file biner captured_traffic.pcap yang siap dibuka di Wireshark.
+File video presentasi HD Anda akan secara otomatis terunduh ke dalam galeri ponsel Anda dan siap diunggah ke LinkedIn!
 
 🛡️ Fitur Utama
 
-Multi-Layer Parsing: Mampu membedah protokol Ethernet (Layer 2), IPv4 (Layer 3), serta TCP, UDP, dan ICMP (Layer 4).
+Web-Based Recorder: Merekam canvas presentasi menjadi file video resolusi tinggi langsung di HP tanpa aplikasi pihak ketiga.
 
-Payload Hex-View: Dilengkapi dengan fitur pemindai payload data mentah (raw payload preview) yang aman.
+Dynamic Narrator Voice: Didukung teknologi sintesis ucapan (TTS) multibahasa dengan sinkronisasi teks.
 
-Export PCAP: Otomatis menghasilkan berkas .pcap terstandardisasi setelah selesai merekam untuk analisis lanjutan.
+Gemini AI Generator: Tombol kecerdasan buatan untuk merancang slide materi kustom dan simulasi kuis deteksi phishing interaktif secara instan.
 
-Desain Konsol Interaktif: Menggunakan visualisasi warna interaktif untuk membedakan kategori protokol.
-
-⚠️ Disclaimer (Peringatan Penting)
-
-Aplikasi Network Sniffer ini dikembangkan murni untuk tujuan akademis, pembelajaran, dan edukasi dalam rangka magang di CodeAlpha. Menangkap lalu lintas data jaringan milik orang lain tanpa izin eksplisit adalah tindakan ilegal. Pengembang tidak bertanggung jawab atas segala bentuk penyalahgunaan program ini.
+Responsive Mobile Interface: Dioptimalkan secara menyeluruh untuk kenyamanan sentuhan jari pada layar ponsel pintar.
