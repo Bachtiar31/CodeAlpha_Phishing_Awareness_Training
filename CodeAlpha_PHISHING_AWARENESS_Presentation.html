@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Security Video Presenter & Recorder - CodeAlpha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+        }
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Efek neon pendar siber */
+        .neon-border-sky {
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.25);
+            border: 1px solid rgba(14, 165, 233, 0.4);
+        }
+        .neon-border-indigo {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+        }
+        /* Animasi perekaman aktif */
+        .record-pulse {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER UTAMA -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur px-6 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-sky-500/10 flex items-center justify-center border border-sky-500/30">
+                    <i class="fa-solid fa-shield-halved text-sky-400 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="orbitron font-bold text-lg text-sky-400 tracking-wider">CODEALPHA STUDIO</h1>
+                    <p class="text-xs text-slate-400">Pusat Perekaman Video Mandiri untuk Task 1 & Task 2</p>
+                </div>
+            </div>
+            
+            <!-- Pengaktif Suara Darurat -->
+            <button id="btnForceUnlockSpeech" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-2 transition animate-bounce">
+                <i class="fa-solid fa-volume-high"></i> AKTIFKAN SUARA NARATOR (KLIK DISINI)
+            </button>
+        </div>
+    </header>
+
+    <!-- NOTIFIKASI SYSTEM TOAST -->
+    <div id="systemToast" class="fixed top-24 right-6 z-50 transform translate-x-96 transition-transform duration-300 bg-slate-900 border border-sky-500/50 p-4 rounded-xl shadow-lg max-w-sm hidden items-start gap-3">
+        <div class="text-sky-400 mt-1" id="toastIcon">
+            <i class="fa-solid fa-info-circle text-xl"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm text-slate-100" id="toastTitle">Sistem</h4>
+            <p class="text-xs text-slate-400 mt-1" id="toastMessage">Pesan.</p>
+        </div>
+    </div>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Sisi Kiri: Monitor Video & Kontrol Utama -->
+        <div class="lg:col-span-8 flex flex-col gap-4">
+            
+            <!-- PANEL SELEKSI MODE PRESENTASI -->
+            <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <span class="orbitron text-xs font-bold text-slate-400 tracking-widest">PILIH TUGAS YANG INGIN DIREKAM:</span>
+                <div class="flex gap-2">
+                    <!-- Tombol Task 1 -->
+                    <button id="btnSelectTask1" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg">
+                        <i class="fa-solid fa-network-wired"></i> TASK 1: NETWORK SNIFFER VIDEO
+                    </button>
+                    <!-- Tombol Task 2 -->
+                    <button id="btnSelectTask2" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300">
+                        <i class="fa-solid fa-envelope-open-text"></i> TASK 2: PHISHING TRAINING VIDEO
+                    </button>
+                </div>
+            </div>
+
+            <!-- PREVIEW KANVAS VIDEO -->
+            <div id="studioContainer" class="bg-slate-950 rounded-2xl border border-slate-800 p-4 neon-border-indigo flex flex-col justify-center">
+                <div class="flex justify-between items-center mb-3">
+                    <span id="studioBadge" class="orbitron text-xs font-semibold text-indigo-400 tracking-widest flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span> REKAMAN AKTIF: TASK 1 (SNIFFER)
+                    </span>
+                    <div id="recordingBadge" class="hidden items-center gap-2 bg-red-500/20 border border-red-500/50 rounded-full px-3 py-1 text-xs text-red-400 font-bold">
+                        <span class="w-2 h-2 rounded-full bg-red-500 record-pulse inline-block"></span> MEREKAM VIDEO...
+                    </div>
+                </div>
+
+                <!-- Frame Kanvas HD 720p (Rasio 16:9) -->
+                <div class="relative w-full aspect-video rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
+                    <canvas id="videoCanvas" class="w-full h-full block bg-slate-950"></canvas>
+                </div>
+
+                <!-- PANEL NAVIGASI SLIDE -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-4 mt-4 bg-slate-900/50 p-4 rounded-xl border border-slate-800/60">
+                    <div class="flex justify-center sm:justify-start gap-2">
+                        <button id="btnPrev" class="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 transition flex items-center justify-center border border-slate-700 text-slate-300">
+                            <i class="fa-solid fa-backward-step"></i>
+                        </button>
+                        <button id="btnPlayPause" class="px-5 h-10 rounded-lg bg-indigo-500 hover:bg-indigo-400 transition flex items-center justify-center gap-2 font-semibold text-slate-950">
+                            <i id="playIcon" class="fa-solid fa-play"></i> <span id="playText">PUTAR</span>
+                        </button>
+                        <button id="btnNext" class="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 transition flex items-center justify-center border border-slate-700 text-slate-300">
+                            <i class="fa-solid fa-forward-step"></i>
+                        </button>
+                    </div>
+
+                    <div class="text-center text-sm font-medium text-slate-400">
+                        Slide <span id="currentSlideNum" class="text-indigo-400 font-bold">1</span> dari <span id="totalSlidesNum">5</span>
+                    </div>
+
+                    <div class="flex justify-center sm:justify-end gap-2">
+                        <button id="btnNarration" class="px-3 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-2 text-sm text-slate-300">
+                            <i id="narrationIcon" class="fa-solid fa-volume-high"></i> Suara
+                        </button>
+                        <button id="btnRecord" class="px-4 h-10 rounded-lg bg-red-600 hover:bg-red-500 hover:scale-105 transition flex items-center gap-2 font-bold text-white shadow-lg shadow-red-950/50">
+                            <i class="fa-solid fa-circle"></i> Rekam File (.WebM)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Petunjuk Rekam Video Terpisah -->
+            <div class="bg-slate-950 rounded-xl border border-slate-800 p-5 flex gap-4 items-start">
+                <div class="text-amber-400 mt-1"><i class="fa-solid fa-lightbulb text-xl"></i></div>
+                <div class="text-sm text-slate-400 leading-relaxed">
+                    <strong class="text-slate-200">Bagaimana Cara Merekam Secara Terpisah?</strong><br>
+                    1. Klik tombol <strong class="text-indigo-400">TASK 1</strong> di atas, nyalakan suara, lalu klik <strong class="text-red-500">Rekam File</strong> untuk mengunduh rekaman sniffer.<br>
+                    2. Setelah selesai, ganti ke mode <strong class="text-sky-400">TASK 2</strong> di atas, dan klik rekam kembali untuk mengunduh rekaman phishing secara mandiri. Anda akan mendapatkan dua file rekaman yang terpisah!
+                </div>
+            </div>
+        </div>
+
+        <!-- Sisi Kanan: AI Cyber Assistant & Suara -->
+        <div class="lg:col-span-4 flex flex-col gap-4">
+            
+            <!-- PANEL SMART GEMINI AI -->
+            <div class="bg-slate-950 rounded-2xl border border-emerald-500/30 p-5 flex flex-col gap-4 relative overflow-hidden">
+                <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
+                    <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i>
+                    <h2 class="orbitron font-bold text-sm tracking-wider text-slate-200">✨ SMART AI ASSISTANT</h2>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold orbitron text-slate-400">UBAH MATERI / SKENARIO KUSTOM</label>
+                    <input type="text" id="aiTopicInput" placeholder="Contoh: Protokol HTTP vs HTTPS, Trojan Horse" class="w-full bg-slate-900 border border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-300 focus:outline-none focus:border-emerald-500 placeholder-slate-600">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btnGenerateSlide" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 transition">
+                        <i class="fa-solid fa-plus"></i> Buat Slide AI
+                    </button>
+                    <button id="btnGenerateQuiz" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-3 rounded-lg flex items-center justify-center gap-1.5 transition">
+                        <i class="fa-solid fa-circle-question"></i> Kuis Interaktif AI
+                    </button>
+                </div>
+
+                <div id="aiLoader" class="hidden items-center justify-center gap-2 py-2 text-xs text-emerald-400 font-semibold bg-emerald-950/20 border border-emerald-500/20 rounded-lg">
+                    <i class="fa-solid fa-spinner animate-spin"></i> Menghubungi Gemini AI...
+                </div>
+            </div>
+
+            <!-- PANEL TEKS DIALURKAN (SCRIPT PREVIEW) -->
+            <div class="bg-slate-950 rounded-2xl border border-slate-800 p-5 flex-grow flex flex-col justify-between">
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
+                        <i class="fa-solid fa-comment-dots text-indigo-400"></i>
+                        <h2 class="orbitron font-bold text-sm tracking-wider text-slate-200">SPOKEN NARRATION SCRIPT</h2>
+                    </div>
+
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-sm leading-relaxed max-h-[180px] overflow-y-auto">
+                        <p id="liveScriptText" class="text-slate-300 italic">Memuat script narasi presentasi...</p>
+                    </div>
+
+                    <div class="flex flex-col gap-2 mt-2">
+                        <label class="text-xs orbitron font-semibold text-slate-400">PILIH SUARA PRESENTASI (TTS)</label>
+                        <select id="voiceSelect" class="w-full bg-slate-900 border border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-300 focus:outline-none focus:border-indigo-500"></select>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-500 flex flex-col gap-1">
+                    <p>Status Browser Audio: <strong id="speechStatus" class="text-red-400">Terkunci</strong></p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- KUIS POPUP INTERAKTIF -->
+    <div id="quizModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative">
+            <button id="btnCloseQuiz" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-800 pb-3">
+                <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i>
+                <h3 class="orbitron font-bold text-lg text-slate-100">✨ KUIS DETEKSI ANCAMAN SIBER AI</h3>
+            </div>
+            <div id="quizContent"></div>
+        </div>
+    </div>
+
+    <footer class="border-t border-slate-900 bg-slate-950/40 p-4 text-center text-xs text-slate-500">
+        <p>&copy; 2026 CodeAlpha Cyber Security Training. Workspace Perekam Video Portabel.</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('videoCanvas');
+        const ctx = canvas.getContext('2d');
+        const SLIDE_WIDTH = 1280;
+        const SLIDE_HEIGHT = 720;
+        canvas.width = SLIDE_WIDTH;
+        canvas.height = SLIDE_HEIGHT;
+
+        // DATASET TUGAS 1 (BASIC NETWORK SNIFFER)
+        const task1Slides = [
+            {
+                id: 1,
+                title: "BASIC NETWORK SNIFFER",
+                subtitle: "Capturing and Analyzing Network Traffic",
+                meta: "CODEALPHA TASK 1 - PACKET ANALYSIS",
+                narration: "Welcome to Code Alpha Task 1. Today, we demonstrate a basic network sniffer built in Python to capture and analyze live network traffic packets.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#6366f1');
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(99, 102, 241, 0.6)';
+                    ctx.shadowBlur = 20;
+                    ctx.font = 'bold 70px "Orbitron"';
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("NETWORK SNIFFER", SLIDE_WIDTH / 2, 310 + Math.sin(time * 2) * 5);
+                    ctx.restore();
+
+                    ctx.font = '300 28px "Inter"';
+                    ctx.fillStyle = '#818cf8';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("Task 1: Live Network Traffic Capturer & Parser", SLIDE_WIDTH / 2, 390);
+
+                    ctx.font = 'bold 16px "Orbitron"';
+                    ctx.fillStyle = '#64748b';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("CODEALPHA CYBER SECURITY FEATURING PYTHON & SCAPY", SLIDE_WIDTH / 2, 520);
+                }
+            },
+            {
+                id: 2,
+                title: "CORE CONCEPTS & METHOD",
+                subtitle: "How Live Capturing Actually Works",
+                narration: "Our sniffer operates at Layer 2 and Layer 3, binding directly to raw network sockets or using library interfaces to read raw bits from the network driver interface.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#6366f1');
+                    drawSlideHeader(ctx, "CORE CONCEPTS & METHOD", "Unmasking the Network Interface Card (NIC)", '#818cf8');
+
+                    drawTechPanel(ctx, 100, 220, 500, 360, "HOW PACKET CAPTURE WORKS", '#818cf8');
+                    const concepts = [
+                        "• NIC Promiscuous Mode forces the interface to read all frames.",
+                        "• Raw Sockets capture data before passing to operating system.",
+                        "• We parse layered headers: Ethernet -> IP -> TCP/UDP.",
+                        "• Extraction of IP addresses, protocols, port values, and data payload."
+                    ];
+                    ctx.font = '18px "Inter"';
+                    ctx.fillStyle = '#cbd5e1';
+                    concepts.forEach((pt, i) => {
+                        wrapText(ctx, pt, 130, 300 + (i * 65), 440, 26);
+                    });
+
+                    drawTechPanel(ctx, 680, 220, 500, 360, "CAPTURE LAYERS DETECTED", '#818cf8');
+                    const layers = [
+                        { l: "LAYER 4 - TRANSPORT", d: "TCP, UDP, and ICMP control flow packets." },
+                        { l: "LAYER 3 - NETWORK", d: "IPv4 & IPv6 routing headers parsed." },
+                        { l: "LAYER 2 - DATA LINK", d: "Raw MAC addresses and ARP framing packets." }
+                    ];
+                    layers.forEach((item, idx) => {
+                        const rowY = 280 + (idx * 90);
+                        ctx.fillStyle = '#0f172a';
+                        ctx.strokeStyle = '#334155';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.roundRect(710, rowY, 440, 75, 8);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.fillStyle = '#818cf8';
+                        ctx.font = 'bold 18px "Orbitron"';
+                        ctx.fillText(item.l, 730, rowY + 32);
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.font = '15px "Inter"';
+                        ctx.fillText(item.d, 730, rowY + 56);
+                    });
+                }
+            },
+            {
+                id: 3,
+                title: "CODE SNAPSHOT (PYTHON)",
+                subtitle: "Using Scapy for Rapid Parsing",
+                narration: "Using Scapy, we bind a listener. For every packet intercepted, our handler callback executes, stripping layers down to read the payload.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#6366f1');
+                    drawSlideHeader(ctx, "CODE SNAPSHOT (PYTHON)", "Simple and Effective Scapy Architecture", '#818cf8');
+
+                    // Code Editor Block
+                    ctx.fillStyle = '#0b0f19';
+                    ctx.strokeStyle = '#334155';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.roundRect(100, 210, 1080, 420, 12);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Editor Header
+                    ctx.fillStyle = '#1e293b';
+                    ctx.beginPath();
+                    ctx.roundRect(100, 210, 1080, 40, [12, 12, 0, 0]);
+                    ctx.fill();
+
+                    // Editor Dots
+                    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(130, 230, 6, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(150, 230, 6, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(170, 230, 6, 0, Math.PI * 2); ctx.fill();
+
+                    ctx.font = 'bold 14px "Orbitron"';
+                    ctx.fillStyle = '#64748b';
+                    ctx.fillText("basic_sniffer.py", 200, 235);
+
+                    // Code Lines
+                    const code = [
+                        "from scapy.all import sniff, IP, TCP, UDP",
+                        "",
+                        "def packet_callback(packet):",
+                        "    if packet.haslayer(IP):",
+                        "        ip_src = packet[IP].src",
+                        "        ip_dst = packet[IP].dst",
+                        "        print(f'[+] IPv4 Packet Detected: {ip_src} -> {ip_dst}')",
+                        "        if packet.haslayer(TCP):",
+                        "            print(f'    [TCP] Port: {packet[TCP].sport} -> {packet[TCP].dport}')",
+                        "",
+                        "print('Starting Basic Sniffer... Listening on interface ETH0')",
+                        "sniff(prn=packet_callback, store=0)"
+                    ];
+
+                    ctx.font = '16px "monospace"';
+                    ctx.textAlign = 'left';
+                    code.forEach((line, idx) => {
+                        let col = '#cbd5e1';
+                        if (line.startsWith("from") || line.startsWith("import") || line.startsWith("def") || line.startsWith("if")) col = '#f472b6';
+                        else if (line.includes("print") || line.includes("sniff")) col = '#38bdf8';
+                        else if (line.includes("'")) col = '#fbbf24';
+                        
+                        ctx.fillStyle = col;
+                        ctx.fillText(line, 140, 290 + (idx * 28));
+                    });
+                }
+            },
+            {
+                id: 4,
+                title: "SIMULATED LIVE SNIFFING DEMO",
+                subtitle: "Capturing Packets in Real-Time",
+                narration: "Here we see our python script running inside a simulated environment, immediately picking up outbound packets and showing detailed header values.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#6366f1');
+                    drawSlideHeader(ctx, "SIMULATED LIVE SNIFFING DEMO", "Mock Capture Terminal Engine", '#818cf8');
+
+                    // Terminal
+                    ctx.fillStyle = '#020617';
+                    ctx.strokeStyle = '#818cf8';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.roundRect(100, 220, 1080, 400, 12);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.font = 'bold 15px "Orbitron"';
+                    ctx.fillStyle = '#818cf8';
+                    ctx.fillText("root@termux:~# python basic_sniffer.py", 130, 260);
+
+                    const packetLogs = [
+                        { timeOffset: 0, val: "[+] IPv4 Packet Deteksi: 192.168.1.15 -> 142.250.190.46 | PROTO: TCP | LEN: 64" },
+                        { timeOffset: 1, val: "    [TCP Header] Sport: 55432 -> Dport: 443 (HTTPS) | Flags: S (SYN)" },
+                        { timeOffset: 2, val: "[+] IPv4 Packet Deteksi: 192.168.1.1 -> 192.168.1.15 | PROTO: UDP | LEN: 128" },
+                        { timeOffset: 3, val: "    [UDP Header] Sport: 53 (DNS) -> Dport: 55432 | Query: api.codealpha.tech" },
+                        { timeOffset: 4, val: "[+] ARP Packet Intercepted: Who has 192.168.1.1? Tell 192.168.1.15" }
+                    ];
+
+                    ctx.font = '16px "monospace"';
+                    packetLogs.forEach((log, idx) => {
+                        const alpha = Math.min(1, (time * 0.8 - log.timeOffset) % 5);
+                        ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`;
+                        ctx.fillText(log.val, 130, 310 + (idx * 55));
+                    });
+                }
+            },
+            {
+                id: 5,
+                title: "SUMMARY & BEST PRACTICES",
+                subtitle: "Securing Network Streams",
+                narration: "Remember that raw sniffers can catch plaintext. Always use encrypted protocols like HTTPS and SSH to prevent man-in-the-middle exploits.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#6366f1');
+                    drawSlideHeader(ctx, "SUMMARY & BEST PRACTICES", "Mitigating Eavesdropping Attacks", '#818cf8');
+
+                    const points = [
+                        { title: "Enforce HTTPS & Transport Layer Encryption", d: "Sniffers can only read unencrypted plaintext. SSL/TLS renders payloads unreadable." },
+                        { title: "Use VPNs on Public Wi-Fi Networks", d: "Envelops all local layer-3 transfers into a secure, encrypted tunnel." },
+                        { title: "Implement Network Intrusion Detection (NIDS)", d: "Continuous network scanning detects anomalous NIC promiscuous status." }
+                    ];
+
+                    points.forEach((item, idx) => {
+                        const y = 230 + (idx * 130);
+                        ctx.fillStyle = '#818cf8';
+                        ctx.beginPath(); ctx.arc(150, y + 30, 25, 0, Math.PI * 2); ctx.fill();
+
+                        ctx.fillStyle = '#0f172a';
+                        ctx.font = 'bold 20px "Orbitron"';
+                        ctx.textAlign = 'center';
+                        ctx.fillText((idx + 1).toString(), 150, y + 37);
+
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = '#f1f5f9';
+                        ctx.font = 'bold 24px "Orbitron"';
+                        ctx.fillText(item.title, 200, y + 25);
+
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.font = '18px "Inter"';
+                        wrapText(ctx, item.d, 200, y + 55, 900, 24);
+                    });
+                }
+            }
+        ];
+
+        // DATASET TUGAS 2 (PHISHING AWARENESS TRAINING)
+        const task2Slides = [
+            {
+                id: 1,
+                title: "PHISHING AWARENESS",
+                subtitle: "Building the Human Firewall against Social Engineering",
+                meta: "CODEALPHA TASK 2 - SECURITY EDUCATION",
+                narration: "Welcome to Code Alpha Task 2. This is the Phishing Awareness Training. Let us explore the mechanics of social engineering and discover how to defend our assets.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#0ea5e9');
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(14, 165, 233, 0.6)';
+                    ctx.shadowBlur = 20;
+                    ctx.font = 'bold 70px "Orbitron"';
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("PHISHING EDUCATION", SLIDE_WIDTH / 2, 310 + Math.sin(time * 2) * 5);
+                    ctx.restore();
+
+                    ctx.font = '300 28px "Inter"';
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("Task 2: Mitigating Sophisticated Social Engineering Attacks", SLIDE_WIDTH / 2, 390);
+
+                    ctx.font = 'bold 16px "Orbitron"';
+                    ctx.fillStyle = '#64748b';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("CODEALPHA SECURITY COGNITIVE WALLS & HYGIENE", SLIDE_WIDTH / 2, 520);
+                }
+            },
+            {
+                id: 2,
+                title: "ANATOMY OF A PHISH",
+                subtitle: "How Spoof Attacks Evade Human Logic",
+                narration: "Modern phishers impersonate highly trustworthy brands. They use urgent vocabulary to invoke feelings of anxiety, prompting victims to click on malicious redirects.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#0ea5e9');
+                    drawSlideHeader(ctx, "ANATOMY OF A PHISH", "Spotting Phishing Email Indicators", '#38bdf8');
+
+                    drawTechPanel(ctx, 100, 220, 500, 360, "PRIMARY ATTACK INDICATORS", '#38bdf8');
+                    const indicators = [
+                        "• Urgent Tone: Demanding instant verification updates.",
+                        "• Spoofed Addresses: Looks official but is actually off-domain.",
+                        "• Malicious URLs: Disguised landing addresses.",
+                        "• File Attachments: Fake bills containing macro scripting."
+                    ];
+                    ctx.font = '18px "Inter"';
+                    ctx.fillStyle = '#cbd5e1';
+                    indicators.forEach((pt, i) => {
+                        wrapText(ctx, pt, 130, 300 + (i * 65), 440, 26);
+                    });
+
+                    // Visual Mock Email
+                    drawTechPanel(ctx, 680, 220, 500, 360, "MOCK DANGER EMAIL FLAG", '#38bdf8');
+                    ctx.fillStyle = '#1e293b';
+                    ctx.beginPath(); ctx.roundRect(710, 280, 440, 260, 8); ctx.fill();
+
+                    ctx.font = 'bold 14px "monospace"';
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillText("Dari: admin-security@micros0ft-verify.com  [WARNING]", 730, 315);
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.fillText("Kepada: user-support@company.com", 730, 345);
+                    ctx.fillText("Subjek: PERINGATAN KUNCI AKUN SEGERA!", 730, 375);
+
+                    ctx.font = '13px "Inter"';
+                    ctx.fillStyle = '#94a3b8';
+                    wrapText(ctx, "We found anomalous operations. Log in inside 24 hours to secure your credentials or face deletion.", 730, 415, 400, 20);
+
+                    // Button Fake Link
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath(); ctx.roundRect(730, 480, 180, 40, 4); ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 13px "Orbitron"';
+                    ctx.fillText("VERIFIKASI DISINI", 760, 505);
+                }
+            },
+            {
+                id: 3,
+                title: "THE S.L.A.M. METHOD",
+                subtitle: "Defending Everyday Business Accounts",
+                narration: "Enforce the S.L.A.M. method. Check the Sender domain carefully, scan the Links destination, review the Attachment extension, and review Message context.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#0ea5e9');
+                    drawSlideHeader(ctx, "THE S.L.A.M. METHOD", "Simple Defensive Checklist Protocol", '#38bdf8');
+
+                    const letters = [
+                        { l: "S", t: "SENDER", d: "Verify sender domain accuracy." },
+                        { l: "L", t: "LINKS", d: "Hover links to check underlying URL." },
+                        { l: "A", t: "ATTACHMENTS", d: "Treat unexpected doc/exe as malware." },
+                        { l: "M", t: "MESSAGE", d: "Spot extreme threats or emergency tone." }
+                    ];
+
+                    const cardWidth = 240;
+                    const cardHeight = 360;
+                    const startX = 100;
+                    const gap = 40;
+
+                    letters.forEach((item, index) => {
+                        const x = startX + index * (cardWidth + gap);
+                        const y = 240;
+
+                        ctx.fillStyle = '#0b1329';
+                        ctx.strokeStyle = '#0ea5e9';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.roundRect(x, y, cardWidth, cardHeight, 12); ctx.fill(); ctx.stroke();
+
+                        ctx.font = '900 80px "Orbitron"';
+                        ctx.fillStyle = '#0ea5e9';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(item.l, x + cardWidth / 2, y + 110 + Math.sin(time * 3 + index) * 4);
+
+                        ctx.font = 'bold 20px "Orbitron"';
+                        ctx.fillStyle = '#f1f5f9';
+                        ctx.fillText(item.t, x + cardWidth / 2, y + 170);
+
+                        ctx.font = '14px "Inter"';
+                        ctx.fillStyle = '#94a3b8';
+                        wrapText(ctx, item.d, x + 20, y + 210, cardWidth - 40, 20);
+                    });
+                }
+            },
+            {
+                id: 4,
+                title: "SPOOFED DOMAINS EXPOSED",
+                subtitle: "Zeroing in on Misleading URLs",
+                narration: "Attackers often perform typosquatting, changing tiny letters such as replacing standard double-u with double-v, or setting up deceptive subdomains.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#0ea5e9');
+                    drawSlideHeader(ctx, "SPOOFED DOMAINS EXPOSED", "Unveiling Visual Typo Hijacks", '#38bdf8');
+
+                    const boxWidth = 500;
+                    const boxHeight = 320;
+                    const y = 240;
+
+                    // Valid
+                    ctx.fillStyle = '#022c22';
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.roundRect(110, y, boxWidth, boxHeight, 16); ctx.fill(); ctx.stroke();
+
+                    ctx.fillStyle = '#10b981';
+                    ctx.font = 'bold 24px "Orbitron"';
+                    ctx.textAlign = 'left';
+                    ctx.fillText("LEGITIMATE SITE", 150, y + 60);
+
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.font = 'bold 32px "Inter"';
+                    ctx.fillText("https://paypal.com", 150, y + 140);
+                    ctx.fillText("https://netflix.com", 150, y + 210);
+
+                    ctx.fillStyle = '#a7f3d0';
+                    ctx.font = '16px "Inter"';
+                    ctx.fillText("✓ Domain spelling is verified & authentic.", 150, y + 270);
+
+                    // Spoof
+                    ctx.fillStyle = '#450a0a';
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.roundRect(670, y, boxWidth, boxHeight, 16); ctx.fill(); ctx.stroke();
+
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = 'bold 24px "Orbitron"';
+                    ctx.fillText("PHISHING SPOOF", 710, y + 60);
+
+                    ctx.fillStyle = '#f87171';
+                    ctx.font = 'bold 32px "Inter"';
+                    ctx.fillText("https://paypa1-verify.com", 710, y + 140);
+                    ctx.fillText("https://netf1ix-support.co", 710, y + 210);
+
+                    ctx.fillStyle = '#fca5a5';
+                    ctx.font = '16px "Inter"';
+                    ctx.fillText("✗ Uses minor letter replacement tricks.", 710, y + 270);
+                }
+            },
+            {
+                id: 5,
+                title: "SUMMARY & PROTOCOLS",
+                subtitle: "Defending Enterprise Identity",
+                narration: "Mitigate threats by employing multi-factor authentication, refusing to act in haste, and instantly flagging strange communications to Security.",
+                draw: function(ctx, time, active) {
+                    drawCyberBackground(ctx, time, '#0ea5e9');
+                    drawSlideHeader(ctx, "SUMMARY & PROTOCOLS", "Strengthening Identity Defense Walls", '#38bdf8');
+
+                    const points = [
+                        { title: "Enforce Multi-Factor Authentication", d: "Secures authentication checkpoints even if credential keys are breached." },
+                        { title: "Always Out-Of-Channel Verify", d: "Confirm legitimacy through separate, validated direct contact pipelines." },
+                        { title: "Stay Cool & Think Clearly", d: "Scrutinize requests threatening account closure if action isn't immediate." }
+                    ];
+
+                    points.forEach((item, idx) => {
+                        const y = 230 + (idx * 130);
+                        ctx.fillStyle = '#0ea5e9';
+                        ctx.beginPath(); ctx.arc(150, y + 30, 25, 0, Math.PI * 2); ctx.fill();
+
+                        ctx.fillStyle = '#0f172a';
+                        ctx.font = 'bold 20px "Orbitron"';
+                        ctx.textAlign = 'center';
+                        ctx.fillText((idx + 1).toString(), 150, y + 37);
+
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = '#f1f5f9';
+                        ctx.font = 'bold 24px "Orbitron"';
+                        ctx.fillText(item.title, 200, y + 25);
+
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.font = '18px "Inter"';
+                        wrapText(ctx, item.d, 200, y + 55, 900, 24);
+                    });
+                }
+            }
+        ];
+
+        // KONFIGURASI DUAL DECK WORKSPACE
+        let slides = [...task1Slides]; // Default dimuat Task 1
+        let currentSlide = 0;
+        let isPlaying = false;
+        let slideStartTime = 0;
+        const SLIDE_DURATION = 9000; // Durasi putar otomatis 9 detik per slide
+
+        let recorder = null;
+        let recordedChunks = [];
+        let isRecording = false;
+
+        let activeUtterance = null; // Menyimpan referensi global untuk menghindari bugs Garbage Collection
+        let isNarrationEnabled = true;
+
+        // Render Latar Belakang Siber
+        function drawCyberBackground(ctx, time, colorHex) {
+            ctx.fillStyle = '#040714';
+            ctx.fillRect(0, 0, SLIDE_WIDTH, SLIDE_HEIGHT);
+
+            ctx.strokeStyle = `${colorHex}15`;
+            ctx.lineWidth = 1;
+            const gridSize = 45;
+            const offsetX = (time * 15) % gridSize;
+            const offsetY = (time * 15) % gridSize;
+
+            for (let x = offsetX; x < SLIDE_WIDTH; x += gridSize) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, SLIDE_HEIGHT); ctx.stroke();
+            }
+            for (let y = offsetY; y < SLIDE_HEIGHT; y += gridSize) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(SLIDE_WIDTH, y); ctx.stroke();
+            }
+        }
+
+        // Header Presentasi Modular
+        function drawSlideHeader(ctx, title, subtitle, colorHex) {
+            ctx.font = 'bold 36px "Orbitron"';
+            ctx.fillStyle = colorHex;
+            ctx.textAlign = 'left';
+            ctx.fillText(title, 100, 100);
+
+            ctx.font = '18px "Inter"';
+            ctx.fillStyle = '#64748b';
+            ctx.fillText(subtitle, 100, 135);
+
+            ctx.strokeStyle = `${colorHex}40`;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(100, 160); ctx.lineTo(1180, 160); ctx.stroke();
+        }
+
+        // Panel Pembungkus Visual Modular
+        function drawTechPanel(ctx, x, y, w, h, headerText, colorHex) {
+            ctx.fillStyle = '#090d1a';
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.roundRect(x, y, w, h, 12); ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = colorHex;
+            ctx.font = 'bold 16px "Orbitron"';
+            ctx.textAlign = 'left';
+            ctx.fillText(headerText, x + 30, y + 45);
+        }
+
+        // Pembungkus Baris Teks
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            let currentY = y;
+
+            for (let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = ctx.measureText(testLine);
+                let testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    ctx.fillText(line, x, currentY);
+                    line = words[n] + ' ';
+                    currentY += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, x, currentY);
+        }
+
+        // Loop Render Utama Frame Canvas
+        let animationFrameId = null;
+        function renderLoop() {
+            const now = Date.now();
+            const timeSeconds = now / 1000;
+
+            if (isPlaying) {
+                const elapsed = now - slideStartTime;
+                if (elapsed >= SLIDE_DURATION) {
+                    goToSlide((currentSlide + 1) % slides.length);
+                }
+            }
+
+            slides[currentSlide].draw(ctx, timeSeconds, isPlaying);
+
+            // Frame Rekam Merah Berkedip
+            ctx.strokeStyle = isRecording ? '#ef4444' : '#1e293b';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(2, 2, SLIDE_WIDTH - 4, SLIDE_HEIGHT - 4);
+
+            animationFrameId = requestAnimationFrame(renderLoop);
+        }
+
+        // Navigasi Pindah Slide
+        function goToSlide(index) {
+            currentSlide = index;
+            slideStartTime = Date.now();
+
+            document.getElementById('currentSlideNum').innerText = currentSlide + 1;
+            document.getElementById('liveScriptText').innerText = slides[currentSlide].narration;
+
+            if (isNarrationEnabled) {
+                speakText(slides[currentSlide].narration);
+            }
+        }
+
+        // SOLUSI KRUSIAL PERBAIKAN SUARA (TTS BUGS FIXED)
+        let hasUnlockedAudio = false;
+
+        function forceUnlockAudioAndSpeech() {
+            if (!window.speechSynthesis) {
+                showToast("Kesalahan", "Browser Anda tidak mendukung Web Speech API (Suara).", "fa-circle-xmark", "red");
+                return;
+            }
+
+            // Hentikan paksa sisa antrean suara macet terdahulu
+            window.speechSynthesis.cancel();
+
+            // Buat uji coba Utterance singkat untuk membuka kunci audio context browser
+            const testUtterance = new SpeechSynthesisUtterance("Voice active");
+            testUtterance.volume = 0.01; // Nyaris tak terdengar, hanya memancing aktivasi suara browser
+            
+            const voices = window.speechSynthesis.getVoices();
+            const engVoice = voices.find(v => v.lang.startsWith('en'));
+            if (engVoice) testUtterance.voice = engVoice;
+
+            window.speechSynthesis.speak(testUtterance);
+
+            hasUnlockedAudio = true;
+            document.getElementById('speechStatus').innerText = "Aktif & Terbuka";
+            document.getElementById('speechStatus').className = "text-emerald-400 font-bold";
+            document.getElementById('btnForceUnlockSpeech').innerText = "SUARA NARATOR SUDAH AKTIF ✓";
+            document.getElementById('btnForceUnlockSpeech').className = "bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-2 transition";
+            
+            showToast("Suara Aktif", "Fitur pembacaan narator suara otomatis berhasil diaktifkan!", "fa-circle-check", "emerald");
+        }
+
+        document.getElementById('btnForceUnlockSpeech').addEventListener('click', forceUnlockAudioAndSpeech);
+
+        // Mesin Utama Speech Synthesis Anti-Garbage-Collector
+        function speakText(text) {
+            if (!window.speechSynthesis) return;
+
+            window.speechSynthesis.cancel(); // Bersihkan antrean agar sinkron
+
+            activeUtterance = new SpeechSynthesisUtterance(text);
+
+            const voiceSelect = document.getElementById('voiceSelect');
+            if (voiceSelect && voiceSelect.selectedOptions[0]) {
+                const selectedVoiceName = voiceSelect.selectedOptions[0].getAttribute('data-name');
+                const voices = window.speechSynthesis.getVoices();
+                const voice = voices.find(v => v.name === selectedVoiceName);
+                if (voice) activeUtterance.voice = voice;
+            } else {
+                const voices = window.speechSynthesis.getVoices();
+                const engVoice = voices.find(v => v.lang.startsWith('en'));
+                if (engVoice) activeUtterance.voice = engVoice;
+            }
+
+            activeUtterance.rate = 1.0;
+            activeUtterance.pitch = 1.0;
+
+            // Masukkan objek instans ke array global agar tidak hancur oleh Garbage Collection browser
+            window.activeUtterances = window.activeUtterances || [];
+            window.activeUtterances.push(activeUtterance);
+            if (window.activeUtterances.length > 5) window.activeUtterances.shift();
+
+            window.speechSynthesis.speak(activeUtterance);
+        }
+
+        // Pengisian Daftar Suara Browser
+        function populateVoices() {
+            if (!window.speechSynthesis) return;
+            const voices = window.speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
+
+            const engVoices = voices.filter(v => v.lang.startsWith('en'));
+            engVoices.forEach(voice => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.setAttribute('data-lang', voice.lang);
+                option.setAttribute('data-name', voice.name);
+                voiceSelect.appendChild(option);
+            });
+
+            if (voiceSelect.children.length === 0) {
+                const opt = document.createElement('option');
+                opt.textContent = "Default Browser Voice";
+                voiceSelect.appendChild(opt);
+            }
+        }
+
+        if (window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = populateVoices;
+        }
+
+        // TOGGLE SELEKSI DECK TUGAS 1 VS TUGAS 2
+        const btnSelectTask1 = document.getElementById('btnSelectTask1');
+        const btnSelectTask2 = document.getElementById('btnSelectTask2');
+        const studioBadge = document.getElementById('studioBadge');
+        const studioContainer = document.getElementById('studioContainer');
+
+        btnSelectTask1.addEventListener('click', () => {
+            if (isRecording) {
+                showToast("Peringatan", "Hentikan perekaman sebelum mengganti tugas.", "fa-triangle-exclamation", "amber");
+                return;
+            }
+            slides = [...task1Slides];
+            studioBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500"></span> REKAMAN AKTIF: TASK 1 (SNIFFER)`;
+            studioBadge.className = "orbitron text-xs font-semibold text-indigo-400 tracking-widest flex items-center gap-2";
+            studioContainer.className = "bg-slate-950 rounded-2xl border border-slate-800 p-4 neon-border-indigo flex flex-col justify-center";
+            
+            btnSelectTask1.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg";
+            btnSelectTask2.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300";
+            
+            document.getElementById('totalSlidesNum').innerText = slides.length;
+            goToSlide(0);
+        });
+
+        btnSelectTask2.addEventListener('click', () => {
+            if (isRecording) {
+                showToast("Peringatan", "Hentikan perekaman sebelum mengganti tugas.", "fa-triangle-exclamation", "amber");
+                return;
+            }
+            slides = [...task2Slides];
+            studioBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span> REKAMAN AKTIF: TASK 2 (PHISHING)`;
+            studioBadge.className = "orbitron text-xs font-semibold text-sky-400 tracking-widest flex items-center gap-2";
+            studioContainer.className = "bg-slate-950 rounded-2xl border border-slate-800 p-4 neon-border-sky flex flex-col justify-center";
+            
+            btnSelectTask1.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300";
+            btnSelectTask2.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white shadow-lg";
+            
+            document.getElementById('totalSlidesNum').innerText = slides.length;
+            goToSlide(0);
+        });
+
+        // KONTROL PLAY / PAUSE & NAVIGASI
+        const btnPlayPause = document.getElementById('btnPlayPause');
+        const playIcon = document.getElementById('playIcon');
+        const playText = document.getElementById('playText');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const btnNarration = document.getElementById('btnNarration');
+
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                slideStartTime = Date.now();
+                playIcon.className = "fa-solid fa-pause";
+                playText.innerText = "JEDA";
+                if (isNarrationEnabled) speakText(slides[currentSlide].narration);
+            } else {
+                playIcon.className = "fa-solid fa-play";
+                playText.innerText = "PUTAR";
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+            }
+        }
+
+        btnPlayPause.addEventListener('click', togglePlayPause);
+        btnPrev.addEventListener('click', () => {
+            let index = currentSlide - 1;
+            if (index < 0) index = slides.length - 1;
+            goToSlide(index);
+        });
+        btnNext.addEventListener('click', () => {
+            let index = (currentSlide + 1) % slides.length;
+            goToSlide(index);
+        });
+
+        btnNarration.addEventListener('click', () => {
+            isNarrationEnabled = !isNarrationEnabled;
+            const narrationIcon = document.getElementById('narrationIcon');
+            if (isNarrationEnabled) {
+                narrationIcon.className = "fa-solid fa-volume-high";
+                btnNarration.classList.remove('opacity-50');
+                speakText(slides[currentSlide].narration);
+            } else {
+                narrationIcon.className = "fa-solid fa-volume-xmark";
+                btnNarration.classList.add('opacity-50');
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+            }
+        });
+
+        // MESIN REKAMAN HD KE FILE VIDEO
+        const btnRecord = document.getElementById('btnRecord');
+        const recordingBadge = document.getElementById('recordingBadge');
+
+        btnRecord.addEventListener('click', () => {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+
+        async function startRecording() {
+            recordedChunks = [];
+            isRecording = true;
+            recordingBadge.classList.remove('hidden');
+            recordingBadge.classList.add('flex');
+            btnRecord.innerHTML = `<i class="fa-solid fa-stop"></i> Stop & Unduh`;
+            btnRecord.classList.replace('bg-red-600', 'bg-amber-600');
+            btnRecord.classList.replace('hover:bg-red-500', 'hover:bg-amber-500');
+
+            goToSlide(0);
+            if (!isPlaying) togglePlayPause();
+
+            // Tangkap frame siber kanvas
+            const stream = canvas.captureStream(30); // 30 FPS HD
+
+            let options = { mimeType: 'video/webm;codecs=vp9' };
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options = { mimeType: 'video/webm' };
+            }
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options = { mimeType: 'video/mp4' };
+            }
+
+            recorder = new MediaRecorder(stream, options);
+            recorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) {
+                    recordedChunks.push(e.data);
+                }
+            };
+
+            recorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                const activeTaskName = slides[0].title.replace(/\s+/g, '_');
+                a.download = `CodeAlpha_${activeTaskName}_Presentation.webm`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+
+                showToast("Berhasil", "File video presentasi terpisah Anda berhasil diunduh ke galeri HP!", "fa-circle-check", "emerald");
+            };
+
+            recorder.start();
+            showToast("Perekaman Dimulai", "Mulai memproses video presentasi HD...", "fa-video", "sky");
+        }
+
+        function stopRecording() {
+            if (!isRecording) return;
+            isRecording = false;
+            recordingBadge.classList.replace('flex', 'hidden');
+            btnRecord.innerHTML = `<i class="fa-solid fa-circle"></i> Rekam File (.WebM)`;
+            btnRecord.classList.replace('bg-amber-600', 'bg-red-600');
+            btnRecord.classList.replace('hover:bg-amber-500', 'hover:bg-red-500');
+
+            if (isPlaying) togglePlayPause();
+            if (recorder && recorder.state !== 'inactive') {
+                recorder.stop();
+            }
+        }
+
+
+        /* =======================================================
+           INTEGRASI API GEMINI (AI GENERATION)
+           ======================================================= */
+        async function callGeminiAPI(payload) {
+            const apiKey = ""; // Dikelola oleh lingkungan runtime
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) return await response.json();
+                } catch (e) {}
+                await new Promise(r => setTimeout(r, delay));
+                delay *= 2;
+            }
+            throw new Error("Batasan jaringan.");
+        }
+
+        function showToast(title, msg, iconClass, theme) {
+            const toast = document.getElementById('systemToast');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMessage').innerText = msg;
+            document.getElementById('toastIcon').innerHTML = `<i class="fa-solid ${iconClass} text-xl text-${theme}-400"></i>`;
+            toast.className = `fixed top-24 right-6 z-50 transform transition-transform duration-300 bg-slate-900 border border-${theme}-500/50 p-4 rounded-xl shadow-lg max-w-sm flex items-start gap-3`;
+            toast.classList.remove('translate-x-96');
+            setTimeout(() => { toast.classList.add('translate-x-96'); }, 4000);
+        }
+
+        // Tombol AI Buat Slide Kustom
+        const btnGenerateSlide = document.getElementById('btnGenerateSlide');
+        const aiTopicInput = document.getElementById('aiTopicInput');
+        const aiLoader = document.getElementById('aiLoader');
+
+        btnGenerateSlide.addEventListener('click', async () => {
+            const topic = aiTopicInput.value.trim() || "Web Security Basics";
+            aiLoader.classList.replace('hidden', 'flex');
+            btnGenerateSlide.disabled = true;
+
+            const prompt = `Create a brand new educational cyber security slide based on topic: "${topic}".
+            Your output must be in STRICT JSON format, fitting this schema exactly without markdown blocks:
+            {
+                "title": "A short, concise title in English (Max 25 chars)",
+                "subtitle": "An educational subtitle in English (Max 45 chars)",
+                "points": [
+                    {"title": "Point 1 Title (Max 35 chars)", "desc": "Short description of Point 1 in English (Max 80 chars)"},
+                    {"title": "Point 2 Title (Max 35 chars)", "desc": "Short description of Point 2 in English (Max 80 chars)"},
+                    {"title": "Point 3 Title (Max 35 chars)", "desc": "Short description of Point 3 in English (Max 80 chars)"}
+                ],
+                "narration": "A highly professional spoken narration text in English about the topic: ${topic}. Keep it under 200 characters."
+            }`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            title: { type: "STRING" },
+                            subtitle: { type: "STRING" },
+                            points: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        title: { type: "STRING" },
+                                        desc: { type: "STRING" }
+                                    },
+                                    required: ["title", "desc"]
+                                }
+                            },
+                            narration: { type: "STRING" }
+                        },
+                        required: ["title", "subtitle", "points", "narration"]
+                    }
+                }
+            };
+
+            try {
+                const res = await callGeminiAPI(payload);
+                const resText = res.candidates?.[0]?.content?.parts?.[0]?.text;
+                const data = JSON.parse(resText);
+
+                const activeThemeColor = slides === task1Slides ? '#818cf8' : '#0ea5e9';
+
+                const newSlide = {
+                    id: slides.length + 1,
+                    title: data.title.toUpperCase(),
+                    subtitle: data.subtitle,
+                    narration: data.narration,
+                    draw: function(ctx, time, active) {
+                        drawCyberBackground(ctx, time, activeThemeColor);
+                        drawSlideHeader(ctx, this.title, this.subtitle, activeThemeColor);
+
+                        data.points.forEach((item, idx) => {
+                            const y = 230 + (idx * 130);
+                            ctx.fillStyle = activeThemeColor;
+                            ctx.beginPath(); ctx.arc(150, y + 30, 25, 0, Math.PI * 2); ctx.fill();
+
+                            ctx.fillStyle = '#0f172a';
+                            ctx.font = 'bold 20px "Orbitron"';
+                            ctx.textAlign = 'center';
+                            ctx.fillText((idx + 1).toString(), 150, y + 37);
+
+                            ctx.textAlign = 'left';
+                            ctx.fillStyle = '#f1f5f9';
+                            ctx.font = 'bold 24px "Orbitron"';
+                            ctx.fillText(item.title, 200, y + 25);
+
+                            ctx.fillStyle = '#94a3b8';
+                            ctx.font = '18px "Inter"';
+                            wrapText(ctx, item.desc, 200, y + 55, 900, 22);
+                        });
+                    }
+                };
+
+                slides.push(newSlide);
+                document.getElementById('totalSlidesNum').innerText = slides.length;
+                goToSlide(slides.length - 1);
+                showToast("Berhasil", "Slide kustom AI berhasil disisipkan!", "fa-circle-check", "emerald");
+
+            } catch (err) {
+                showToast("Gagal", "Gagal menghubungi AI. Coba lagi nanti.", "fa-triangle-exclamation", "red");
+            } finally {
+                aiLoader.classList.replace('flex', 'hidden');
+                btnGenerateSlide.disabled = false;
+            }
+        });
+
+        // AI Kuis Interaktif
+        const btnGenerateQuiz = document.getElementById('btnGenerateQuiz');
+        const quizModal = document.getElementById('quizModal');
+        const btnCloseQuiz = document.getElementById('btnCloseQuiz');
+        const quizContent = document.getElementById('quizContent');
+
+        btnGenerateQuiz.addEventListener('click', async () => {
+            quizModal.classList.replace('hidden', 'flex');
+            quizContent.innerHTML = `
+                <div class="py-12 text-center text-slate-400">
+                    <i class="fa-solid fa-spinner animate-spin text-4xl text-emerald-400 mb-3 block mx-auto"></i>
+                    Memformulasikan kuis deteksi siber secara dinamis...
+                </div>
+            `;
+
+            const currentCtx = slides[currentSlide].title;
+            const prompt = `Create an interactive multiple choice phishing or network security quiz based on context: "${currentCtx}".
+            Output must be in STRICT JSON format with this schema without markdown blocks:
+            {
+                "question": "Ask a realistic incident question?",
+                "options": ["A...", "B...", "C..."],
+                "answer": 0, // 0-based correct option index
+                "explanation": "Brief explanation in Indonesian."
+            }`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            question: { type: "STRING" },
+                            options: { type: "ARRAY", items: { type: "STRING" } },
+                            answer: { type: "INTEGER" },
+                            explanation: { type: "STRING" }
+                        },
+                        required: ["question", "options", "answer", "explanation"]
+                    }
+                }
+            };
+
+            try {
+                const res = await callGeminiAPI(payload);
+                const quiz = JSON.parse(res.candidates?.[0]?.content?.parts?.[0]?.text);
+
+                let optHtml = '';
+                quiz.options.forEach((opt, idx) => {
+                    optHtml += `
+                        <button onclick="checkAnswer(${idx}, ${quiz.answer}, '${encodeURIComponent(quiz.explanation)}')" class="w-full text-left bg-slate-800 hover:bg-slate-700/80 border border-slate-700 p-3 rounded-lg text-sm text-slate-200 transition">
+                            <span class="font-bold text-emerald-400 mr-2">${String.fromCharCode(65 + idx)}.</span> ${opt}
+                        </button>
+                    `;
+                });
+
+                quizContent.innerHTML = `
+                    <div class="flex flex-col gap-4">
+                        <p class="text-sm font-semibold text-slate-300 leading-relaxed">${quiz.question}</p>
+                        <div class="flex flex-col gap-2 mt-2">${optHtml}</div>
+                        <div id="quizFeedback" class="hidden mt-4 p-4 rounded-xl border text-xs leading-relaxed"></div>
+                    </div>
+                `;
+            } catch (err) {
+                quizContent.innerHTML = `<p class="text-center text-red-400 py-6">Gagal memuat kuis.</p>`;
+            }
+        });
+
+        window.checkAnswer = function(chosenIdx, correctIdx, explanation) {
+            const box = document.getElementById('quizFeedback');
+            box.classList.remove('hidden');
+            if (chosenIdx === correctIdx) {
+                box.className = "mt-4 p-4 rounded-xl border bg-emerald-950/40 border-emerald-500/50 text-emerald-300 text-xs";
+                box.innerHTML = `<strong>✓ BENAR!</strong><br>${decodeURIComponent(explanation)}`;
+            } else {
+                box.className = "mt-4 p-4 rounded-xl border bg-red-950/40 border-red-500/50 text-red-300 text-xs";
+                box.innerHTML = `<strong>✗ SALAH.</strong><br>${decodeURIComponent(explanation)}`;
+            }
+        };
+
+        btnCloseQuiz.addEventListener('click', () => { quizModal.classList.replace('flex', 'hidden'); });
+
+        window.onload = function() {
+            populateVoices();
+            document.getElementById('totalSlidesNum').innerText = slides.length;
+            goToSlide(0);
+            renderLoop();
+        };
+    </script>
+</body>
+</html>
